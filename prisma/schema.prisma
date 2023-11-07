@@ -1,0 +1,60 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch","fullTextIndex"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model images {
+  image_id        Int               @id @default(autoincrement())
+  image_name      String            @db.VarChar(255)
+  image_src       String            @db.VarChar(255)
+  user_id         Int?
+  image_desc      String?           @db.VarChar(500)
+  users           users?            @relation(fields: [user_id], references: [user_id], onDelete: Restrict, onUpdate: Restrict, map: "images_FK")
+  images_bookmark images_bookmark[]
+  images_comment  images_comment[]
+
+  @@index([user_id], map: "images_FK")
+  @@fulltext([image_name])
+}
+
+model images_bookmark {
+  bookmark_id  Int       @id @default(autoincrement())
+  user_id      Int
+  image_id     Int
+  date_created DateTime? @db.DateTime(0)
+  images       images    @relation(fields: [image_id], references: [image_id], onUpdate: Restrict, map: "images_bookmark_FK")
+  users        users     @relation(fields: [user_id], references: [user_id], onUpdate: Restrict, map: "images_bookmark_FK_1")
+
+  @@index([image_id], map: "images_bookmark_FK")
+  @@index([user_id], map: "images_bookmark_FK_1")
+}
+
+model images_comment {
+  comment_id   Int       @id @default(autoincrement())
+  comment      String?   @db.VarChar(500)
+  user_id      Int?
+  image_id     Int?
+  timestamp    DateTime? @db.Timestamp(0)
+  date_created DateTime? @db.DateTime(0)
+  images       images?   @relation(fields: [image_id], references: [image_id], onDelete: NoAction, onUpdate: NoAction, map: "images_comment_FK")
+  users        users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "images_comment_FK_1")
+
+  @@index([image_id], map: "images_comment_FK")
+  @@index([user_id], map: "images_comment_FK_1")
+}
+
+model users {
+  user_id         Int               @id @default(autoincrement())
+  user_name       String            @db.VarChar(255)
+  user_email      String            @unique(map: "email") @db.VarChar(255)
+  password        String            @db.VarChar(255)
+  insta_app_id    String?           @db.VarChar(255)
+  images          images[]
+  images_bookmark images_bookmark[]
+  images_comment  images_comment[]
+}
