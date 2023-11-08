@@ -1,0 +1,38 @@
+version: “3”
+
+services:
+  mysql_db:
+    image: mysql
+
+    container_name: mysql_db
+
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+
+    ports:
+      - 3306:3306
+
+    volumes:
+      - mysql_db:/var/lib/mysql
+    networks:
+      - node-works
+
+  cons-node:
+    depends_on:
+      - mysql_db
+
+    container_name: cons-node35
+    build: .
+
+    ports:
+      - 8080:8080
+
+    networks:
+      - node-works
+
+volumes:
+  mysql_db:
+    driver: local
+
+networks:
+  node-works:
