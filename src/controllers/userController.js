@@ -244,40 +244,52 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
-const removeUserImage = async (req,res) =>{
+const removeUserImage = async (req, res) => {
   let { token } = req.headers;
   let userInfo = decodeToken(token);
   let { user_id } = userInfo.data.checkEmail;
 
-  let {image_id} = req.body;
-  
-  try{
+  let { image_id } = req.body;
+  try {
+    // Kiểm tra ảnh có phải của user hiện tại
+    let data = await prisma.images.findMany({
+      where: {
+        user_id: Number(user_id),
+      },
+    });
+
+    console.log(data);
+    let checkAvail = data.find((val) => val.image_id === image_id);
     // Tháo ảnh khỏi bookmark
-    await prisma.images_bookmark.deleteMany({
-      where:{
-        image_id: image_id
-      }
-    })
-    // Tháo comment
-    await prisma.images_comment.deleteMany({
-      where:{
-        image_id: image_id
-      }
-    })
 
-    await prisma.images.delete({
-      where:{
-        user_id: user_id,
-        image_id: image_id
-      }
-    })
+    if (checkAvail > 0) {
+      await prisma.images_bookmark.deleteMany({
+        where: {
+          image_id: Number(image_id),
+        },
+      });
+      // Tháo comment
+      await prisma.images_comment.deleteMany({
+        where: {
+          image_id: Number(image_id),
+        },
+      });
 
-    res.send("remove completed")
-  }catch(e){
-    res.send(e)
+      await prisma.images.delete({
+        where: {
+          user_id: user_id,
+          image_id: Number(image_id),
+        },
+      });
+
+      res.send("remove completed");
+    } else {
+      res.send("image not belong to this user");
+    }
+  } catch (e) {
+    res.send(e);
   }
-
-}
+};
 
 export {
   userLogin,

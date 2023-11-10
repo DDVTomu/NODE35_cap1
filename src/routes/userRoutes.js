@@ -30,8 +30,6 @@ userRoute.post("/login", userLogin);
 // localhost:8080/api/user/update-info (USER LOGIN REQUIRED)
 userRoute.put("/update-info", khoaApi, updateInfo);
 
-userRoute.put("/update-avatar", upload.single("file"), uploadAvatar);
-
 userRoute.post("/get-user", userGetInfoById);
 
 // localhost:8080/api/image/my-images
